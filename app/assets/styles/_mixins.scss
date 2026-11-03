@@ -1,11 +1,27 @@
 // 全局混入，已通过 nuxt.config 的 additionalData 注入，无需手动 @use
 
 // 毛玻璃卡片：颜色全部引用 CSS 变量，暗色模式自动切换
-@mixin glass {
-  background: var(--glass-bg);
+@mixin glass($strong: false) {
+  @if $strong {
+    background: var(--glass-bg-strong);
+  } @else {
+    background: var(--glass-bg);
+  }
+
   border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+}
+
+// 可点击卡片的悬浮效果
+@mixin card-hover {
+  transition: box-shadow 0.3s, transform 0.3s;
+
+  &:hover {
+    box-shadow: var(--card-shadow-hover);
+    transform: translateY(-2px);
+  }
 }
 
 // 手机端断点

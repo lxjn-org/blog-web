@@ -5,7 +5,7 @@ export const projects: Project[] = [
     name: '个人网站',
     description: '基于 Nuxt 与 Naive UI 的个人网站，支持中英文与暗黑模式。',
     cover: null,
-    icon: 'globe',
+    icon: 'web',
     category: 'web',
     status: 'doing',
     techTags: ['Nuxt', 'Naive UI', 'TypeScript'],

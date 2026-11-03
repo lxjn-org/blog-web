@@ -5,9 +5,72 @@
     "blog": "博客",
     "about": "关于"
   },
-  "theme": {
-    "light": "亮色",
-    "dark": "暗色"
+  "header": {
+    "mainNav": "主导航",
+    "switchLang": "切换语言",
+    "switchTheme": "切换明暗主题"
+  },
+  "fullPage": {
+    "nav": "分屏导航",
+    "prev": "上一屏",
+    "next": "下一屏"
+  },
+  "home": {
+    "intro": "个人介绍",
+    "scrollHint": "向下滚动",
+    "featured": "精选项目",
+    "featuredDesc": "挑几个最能代表自己的作品",
+    "viewAllProjects": "查看全部项目",
+    "stack": "技术栈",
+    "stackDesc": "日常使用和正在学习的技术"
+  },
+  "footer": {
+    "friends": "友情链接",
+    "apply": "申请友链",
+    "site": "站点",
+    "builtWith": "基于 Nuxt + Naive UI 构建"
+  },
+  "friendLink": {
+    "title": "申请友链",
+    "doneTitle": "提交成功",
+    "addUsFirst": "请先添加本站",
+    "copy": "复制本站信息",
+    "copied": "已复制本站信息",
+    "copyFailed": "复制失败，请手动复制",
+    "info": {
+      "name": "名称",
+      "url": "地址",
+      "avatar": "头像",
+      "description": "简介"
+    },
+    "field": {
+      "name": "名称",
+      "siteName": "网站名称",
+      "url": "网站地址",
+      "avatar": "头像 / Logo 地址",
+      "description": "一句话简介",
+      "email": "联系邮箱",
+      "backlink": "本站链接所在页面"
+    },
+    "ph": {
+      "name": "你的网站名称",
+      "avatar": "https://… 建议正方形图片",
+      "description": "介绍一下你的网站，50 字以内",
+      "email": "用于通知审核结果，不会公开",
+      "backlink": "你放置本站链接的页面地址，方便核对"
+    },
+    "rule": {
+      "name": "请填写网站名称，30 字以内",
+      "url": "请填写 http(s) 开头的地址",
+      "email": "请填写正确的邮箱"
+    },
+    "confirm": "我已在自己的网站添加了本站链接",
+    "needConfirm": "请先在你的网站添加本站链接",
+    "note": "提交时会进行人机验证。网站需能正常访问、内容原创健康，审核通常在 {days} 天内完成。",
+    "submit": "提交申请",
+    "failed": "提交失败，请稍后再试",
+    "doneHead": "申请已提交",
+    "doneText": "审核结果会发送到你填写的邮箱，通过后你的网站会出现在页足的友情链接中。"
   },
   "page": {
     "projects": "项目",
@@ -15,7 +78,8 @@
     "about": "关于我"
   },
   "common": {
-    "building": "页面开发中",
+    "cancel": "取消",
+    "gotIt": "知道了",
     "present": "至今"
   }
 }

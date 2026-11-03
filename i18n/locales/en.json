@@ -5,9 +5,72 @@
     "blog": "Blog",
     "about": "About"
   },
-  "theme": {
-    "light": "Light",
-    "dark": "Dark"
+  "header": {
+    "mainNav": "Main navigation",
+    "switchLang": "Switch language",
+    "switchTheme": "Toggle dark mode"
+  },
+  "fullPage": {
+    "nav": "Section navigation",
+    "prev": "Previous section",
+    "next": "Next section"
+  },
+  "home": {
+    "intro": "Introduction",
+    "scrollHint": "Scroll down",
+    "featured": "Featured Projects",
+    "featuredDesc": "A few works that represent me best",
+    "viewAllProjects": "View all projects",
+    "stack": "Tech Stack",
+    "stackDesc": "What I use every day and what I'm learning"
+  },
+  "footer": {
+    "friends": "Friends",
+    "apply": "Apply",
+    "site": "Site",
+    "builtWith": "Built with Nuxt + Naive UI"
+  },
+  "friendLink": {
+    "title": "Apply for a Friend Link",
+    "doneTitle": "Submitted",
+    "addUsFirst": "Please add this site first",
+    "copy": "Copy site info",
+    "copied": "Site info copied",
+    "copyFailed": "Copy failed, please copy it manually",
+    "info": {
+      "name": "Name",
+      "url": "URL",
+      "avatar": "Avatar",
+      "description": "About"
+    },
+    "field": {
+      "name": "Name",
+      "siteName": "Site name",
+      "url": "Site URL",
+      "avatar": "Avatar / logo URL",
+      "description": "Description",
+      "email": "Email",
+      "backlink": "Page linking to us"
+    },
+    "ph": {
+      "name": "Your site name",
+      "avatar": "https://… a square image works best",
+      "description": "Describe your site in 50 characters or fewer",
+      "email": "For the review result; never made public",
+      "backlink": "The page where you added our link"
+    },
+    "rule": {
+      "name": "Enter a site name (up to 30 characters)",
+      "url": "Enter a URL starting with http(s)",
+      "email": "Enter a valid email address"
+    },
+    "confirm": "I have added a link to this site on my site",
+    "needConfirm": "Please add a link to this site first",
+    "note": "A human verification runs on submit. Your site must be reachable with original, healthy content. Reviews usually take up to {days} days.",
+    "submit": "Submit",
+    "failed": "Submission failed, please try again later",
+    "doneHead": "Application submitted",
+    "doneText": "The result will be sent to your email. Once approved, your site will appear in the footer's friend links."
   },
   "page": {
     "projects": "Projects",
@@ -15,7 +78,8 @@
     "about": "About Me"
   },
   "common": {
-    "building": "Under construction",
+    "cancel": "Cancel",
+    "gotIt": "Got it",
     "present": "Present"
   }
 }

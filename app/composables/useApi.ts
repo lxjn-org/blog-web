@@ -1,14 +1,16 @@
 import type { UseFetchOptions } from 'nuxt/app'
 
+type ApiFetchOptions = Omit<UseFetchOptions<ApiResult<unknown>>, 'transform' | 'default'>
+
 /**
  * 首屏数据请求：包一层 useFetch，自动拆出 ApiResult.data，
  * code 不为 0 时抛错，交给页面的 error 处理。
  */
-export function useApi<T>(url: string | (() => string), options: UseFetchOptions<ApiResult<T>, T> = {}) {
+export function useApi<T>(url: string | (() => string), options: ApiFetchOptions = {}) {
   return useFetch(url, {
-    ...options,
-    transform: (res: ApiResult<T>) => {
-      if (res.code !== 0) throw createError({ statusCode: res.code === 40400 ? 404 : 500, statusMessage: res.message })
+    ...(options as object),
+    transform: (res: ApiResult<T>): T => {
+      if (res.code !== 0) throw createError({ statusCode: res.code === 40400 ? 404 : 500, message: res.message })
       return res.data
     },
   })

@@ -17,6 +17,11 @@
   &__main {
     flex: 1;
     padding-top: var(--header-height);
+
+    // 手机端页头换成两行，约 104px
+    @include mobile {
+      padding-top: 104px;
+    }
   }
 }
 </style>

@@ -1,4 +1,3 @@
-import AutoImport from 'unplugin-auto-import/vite'
 import { NaiveUiResolver } from 'unplugin-vue-components/resolvers'
 import Components from 'unplugin-vue-components/vite'
 
@@ -47,11 +46,6 @@ export default defineNuxtConfig({
       },
     },
     plugins: [
-      // Naive UI 的 useMessage 等组合式函数自动导入
-      AutoImport({
-        imports: [{ 'naive-ui': ['useDialog', 'useMessage', 'useNotification', 'useLoadingBar', 'useThemeVars'] }],
-        dts: false,
-      }),
       // Naive UI 组件（<n-button> 等）按需自动导入
       Components({ resolvers: [NaiveUiResolver()], dts: false }),
     ],

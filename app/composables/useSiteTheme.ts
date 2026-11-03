@@ -3,22 +3,32 @@ import type { GlobalThemeOverrides } from 'naive-ui'
 
 export type ThemeMode = 'light' | 'dark'
 
-/** 亮色与暗色共用的主色（Element 蓝） */
-const primary = {
+/** 亮色与暗色共用的主色（Element 蓝）、圆角与字体 */
+const shared: GlobalThemeOverrides['common'] = {
   primaryColor: '#409EFF',
-  primaryColorHover: '#66B1FF',
+  primaryColorHover: '#79BBFF',
   primaryColorPressed: '#3A8EE6',
-  primaryColorSuppl: '#66B1FF',
+  primaryColorSuppl: '#79BBFF',
+  borderRadius: '3px',
+  fontSize: '14px',
+  fontFamily: '"Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif',
 }
 
-/** 亮色主题覆盖 */
+/** 亮色主题覆盖：文字与边框沿用设计稿的 Element 色阶 */
 const lightOverrides: GlobalThemeOverrides = {
-  common: { ...primary, borderRadius: '8px' },
+  common: {
+    ...shared,
+    textColor1: '#303133',
+    textColor2: '#606266',
+    textColor3: '#73767A',
+    borderColor: '#DCDFE6',
+    dividerColor: '#EBEEF5',
+  },
 }
 
 /** 暗色主题覆盖，先只统一主色，后续再细调 */
 const darkOverrides: GlobalThemeOverrides = {
-  common: { ...primary, borderRadius: '8px' },
+  common: { ...shared },
 }
 
 /**

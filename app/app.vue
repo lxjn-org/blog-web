@@ -24,10 +24,24 @@ useHead({
     :locale="naiveLocale"
     :date-locale="naiveDateLocale"
   >
-    <n-message-provider>
-      <NuxtLayout>
-        <NuxtPage />
-      </NuxtLayout>
-    </n-message-provider>
+    <!-- 把主题变量写成 :root 上的 CSS 变量（--primary-color、--text-color-2 等），供 SCSS 使用 -->
+    <ThemeCssVars>
+      <n-message-provider>
+        <div class="app-root">
+          <BgLayer />
+          <NuxtLayout>
+            <NuxtPage />
+          </NuxtLayout>
+        </div>
+      </n-message-provider>
+    </ThemeCssVars>
   </n-config-provider>
 </template>
+
+<style lang="scss">
+.app-root {
+  min-height: 100vh;
+  font-family: var(--font-family);
+  color: var(--text-color-1);
+}
+</style>
