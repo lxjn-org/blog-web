@@ -1,0 +1,21 @@
+{
+  "nav": {
+    "home": "首页",
+    "projects": "项目",
+    "blog": "博客",
+    "about": "关于"
+  },
+  "theme": {
+    "light": "亮色",
+    "dark": "暗色"
+  },
+  "page": {
+    "projects": "项目",
+    "blog": "博客",
+    "about": "关于我"
+  },
+  "common": {
+    "building": "页面开发中",
+    "present": "至今"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "nav": {
+    "home": "Home",
+    "projects": "Projects",
+    "blog": "Blog",
+    "about": "About"
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark"
+  },
+  "page": {
+    "projects": "Projects",
+    "blog": "Blog",
+    "about": "About Me"
+  },
+  "common": {
+    "building": "Under construction",
+    "present": "Present"
+  }
+}
