@@ -72,6 +72,18 @@
     "doneHead": "申请已提交",
     "doneText": "审核结果会发送到你填写的邮箱，通过后你的网站会出现在页足的友情链接中。"
   },
+  "blog": {
+    "subtitle": "学习笔记、踩坑记录与项目复盘",
+    "search": "搜索文章",
+    "searchPlaceholder": "搜索文章标题或标签",
+    "top": "置顶",
+    "readMinutes": "约 {n} 分钟阅读",
+    "empty": "没有找到相关文章",
+    "pagination": "分页",
+    "categories": "分类",
+    "all": "全部",
+    "tags": "标签"
+  },
   "page": {
     "projects": "项目",
     "blog": "博客",

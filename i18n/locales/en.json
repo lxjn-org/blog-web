@@ -72,6 +72,18 @@
     "doneHead": "Application submitted",
     "doneText": "The result will be sent to your email. Once approved, your site will appear in the footer's friend links."
   },
+  "blog": {
+    "subtitle": "Study notes, lessons learned and project retrospectives",
+    "search": "Search posts",
+    "searchPlaceholder": "Search by title or tag",
+    "top": "Pinned",
+    "readMinutes": "{n} min read",
+    "empty": "No posts found",
+    "pagination": "Pagination",
+    "categories": "Categories",
+    "all": "All",
+    "tags": "Tags"
+  },
   "page": {
     "projects": "Projects",
     "blog": "Blog",
