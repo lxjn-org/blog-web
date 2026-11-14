@@ -1,7 +1,7 @@
-# blogUI
+# blog-web
 
 #### Description
-博客前端
+个人博客用户端
 
 #### Software Architecture
 Software architecture description
