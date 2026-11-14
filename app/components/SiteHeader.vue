@@ -35,7 +35,6 @@ function isActive(to: string) {
   return to === home ? route.path === home : route.path.startsWith(to)
 }
 
-const currentLocaleName = computed(() => locales.value.find(item => item.code === locale.value)?.name ?? '')
 const localeOptions = computed(() => locales.value.map(item => ({ key: item.code, label: item.name ?? item.code })))
 
 /** 语言下拉菜单选中后切换语言 */
@@ -61,21 +60,30 @@ function onSelectLocale(code: string) {
           {{ item.label }}
         </NuxtLink>
       </nav>
+    </div>
 
-      <span class="site-header__sep" aria-hidden="true" />
-
-      <div class="site-header__actions">
-        <n-dropdown trigger="click" :options="localeOptions" :value="locale" @select="onSelectLocale">
-          <button class="hdr-btn" type="button" :aria-label="t('header.switchLang')" aria-haspopup="menu">
-            <AppIcon name="globe" />
-            <span class="hdr-btn__text">{{ currentLocaleName }}</span>
-            <AppIcon class="hdr-btn__text" name="chevron-down" :size="12" :stroke-width="2" />
-          </button>
-        </n-dropdown>
-        <button class="hdr-btn is-icon" type="button" :aria-label="t('header.switchTheme')" @click="toggle">
-          <AppIcon :name="isDark ? 'sun' : 'moon'" />
+    <!-- 语言 / 明暗切换脱离内容区，固定在页头最右侧 -->
+    <div class="site-header__actions">
+      <n-dropdown trigger="click" placement="bottom-end" :options="localeOptions" :value="locale" @select="onSelectLocale">
+        <button
+          class="hdr-btn"
+          type="button"
+          :title="t('header.switchLang')"
+          :aria-label="t('header.switchLang')"
+          aria-haspopup="menu"
+        >
+          <AppIcon name="translate" />
         </button>
-      </div>
+      </n-dropdown>
+      <button
+        class="hdr-btn"
+        type="button"
+        :title="t('header.switchTheme')"
+        :aria-label="t('header.switchTheme')"
+        @click="toggle"
+      >
+        <AppIcon :name="isDark ? 'sun' : 'moon'" />
+      </button>
     </div>
   </header>
 </template>
@@ -87,6 +95,9 @@ function onSelectLocale(code: string) {
   right: 0;
   left: 0;
   z-index: 100;
+  // 右侧操作区（两个图标按钮 + 边距）占用的宽度，内容区右侧据此让位，避免导航与按钮重叠
+  --actions-reserve: 108px;
+
   height: var(--header-height);
   background: transparent;
   transition: background-color 0.3s, box-shadow 0.3s, backdrop-filter 0.3s;
@@ -105,6 +116,8 @@ function onSelectLocale(code: string) {
     max-width: var(--content-width);
     height: 100%;
     padding: 0 24px;
+    // 视口不够宽时，右侧多留出操作区的位置，品牌名仍与正文左边对齐
+    padding-right: max(24px, calc(var(--actions-reserve) - max(0px, (100vw - var(--content-width)) / 2)));
     margin: 0 auto;
   }
 
@@ -125,20 +138,17 @@ function onSelectLocale(code: string) {
     align-self: stretch;
   }
 
-  &__sep {
-    width: 1px;
-    height: 16px;
-    margin: 0 4px;
-    background: var(--border-color);
-  }
-
   &__actions {
+    position: absolute;
+    top: 0;
+    right: 24px;
     display: flex;
     gap: 4px;
     align-items: center;
+    height: var(--header-height);
   }
 
-  // 手机端：导航换到第二行
+  // 手机端：导航换到第二行，操作区贴在第一行右侧
   @include mobile {
     height: auto;
 
@@ -147,14 +157,19 @@ function onSelectLocale(code: string) {
       padding: 8px 8px 0 16px;
     }
 
+    &__brand {
+      line-height: 36px;
+    }
+
     &__nav {
-      order: 3;
       width: 100%;
       height: 44px;
     }
 
-    &__sep {
-      display: none;
+    &__actions {
+      top: 8px;
+      right: 8px;
+      height: 36px;
     }
   }
 }
@@ -202,14 +217,11 @@ function onSelectLocale(code: string) {
 .hdr-btn {
   box-sizing: border-box;
   display: inline-flex;
-  gap: 6px;
   align-items: center;
   justify-content: center;
-  min-width: 36px;
+  width: 36px;
   height: 36px;
-  padding: 0 10px;
-  font: inherit;
-  font-size: 13px;
+  padding: 0;
   color: var(--text-color-2);
   cursor: pointer;
   background: transparent;
@@ -219,17 +231,6 @@ function onSelectLocale(code: string) {
   &:hover {
     color: var(--primary-color);
     background: color-mix(in srgb, var(--primary-color) 8%, transparent);
-  }
-
-  &.is-icon {
-    width: 36px;
-    padding: 0;
-  }
-
-  @include mobile {
-    &__text {
-      display: none;
-    }
   }
 }
 </style>
