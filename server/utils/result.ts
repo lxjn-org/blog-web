@@ -33,10 +33,21 @@ export function fail(event: H3Event, code: number, message: string): ApiResult<n
   return { code, message, data: null }
 }
 
-/** 按 page / size 对数组分页，page 从 1 开始，size 默认 10、最大 50 */
-export function paginate<T>(all: T[], pageRaw: unknown, sizeRaw: unknown): PageResult<T> {
+/** 分页参数：page 从 1 开始；offset 供 SQL 使用 */
+export interface Pagination {
+  page: number
+  size: number
+  offset: number
+}
+
+/** 解析请求中的 page / size：page 默认 1；size 默认 10、最大 50；非法值回落到默认值 */
+export function parsePagination(pageRaw: unknown, sizeRaw: unknown): Pagination {
   const page = Math.max(1, Number.parseInt(String(pageRaw ?? 1), 10) || 1)
   const size = Math.min(50, Math.max(1, Number.parseInt(String(sizeRaw ?? 10), 10) || 10))
-  const start = (page - 1) * size
-  return { list: all.slice(start, start + size), total: all.length, page, size }
+  return { page, size, offset: (page - 1) * size }
+}
+
+/** 组装分页结果 { list, total, page, size } */
+export function toPageResult<T>(list: T[], total: number, { page, size }: Pagination): PageResult<T> {
+  return { list, total, page, size }
 }
