@@ -15,5 +15,10 @@ export default defineEventHandler((event) => {
     .sort((a, b) => Number(b.isTop) - Number(a.isTop) || b.publishedAt.localeCompare(a.publishedAt))
     .map(({ content: _content, updatedAt: _updatedAt, ...summary }) => summary)
 
-  return ok(paginate(list, page, size))
+  const pagination = parsePagination(page, size)
+  return ok(toPageResult(
+    list.slice(pagination.offset, pagination.offset + pagination.size),
+    list.length,
+    pagination,
+  ))
 })

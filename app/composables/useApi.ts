@@ -10,7 +10,11 @@ export function useApi<T>(url: string | (() => string), options: ApiFetchOptions
   return useFetch(url, {
     ...(options as object),
     transform: (res: ApiResult<T>): T => {
-      if (res.code !== 0) throw createError({ statusCode: res.code === 40400 ? 404 : 500, message: res.message })
+      if (res.code !== 0) {
+        // 40400 资源不存在 → 404；50000 数据库不可用 → 503（维护页）；其余 → 500
+        const statusCode = res.code === 40400 ? 404 : res.code === 50000 ? 503 : 500
+        throw createError({ statusCode, message: res.message })
+      }
       return res.data
     },
   })

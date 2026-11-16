@@ -120,6 +120,9 @@ dist
 .data
 .nitro
 
+# 数据库文件（本地 SQLite，不提交仓库）
+data/
+
 # IDE
 .idea
 

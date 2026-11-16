@@ -8,6 +8,14 @@ export default defineNuxtConfig({
 
   modules: ['@nuxtjs/i18n', '@pinia/nuxt'],
 
+  // 服务端私密配置，对应环境变量 NUXT_DB_CONFIG_PATH / NUXT_IP_HASH_SALT
+  runtimeConfig: {
+    // 数据库配置文件路径，默认 data/data.config
+    dbConfigPath: '',
+    // 友链申请限流的 IP 哈希盐，建议部署时用环境变量覆盖
+    ipHashSalt: '',
+  },
+
   // 生产构建时转译 Naive UI，保证服务端渲染使用同一份 css-render 实例
   build: {
     transpile: process.env.NODE_ENV === 'production' ? ['naive-ui', 'vueuc', '@css-render/vue3-ssr'] : [],
