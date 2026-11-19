@@ -27,6 +27,42 @@ function isDatabaseReady(): boolean {
   }
 }
 
+/**
+ * 检测用户的语言偏好：优先级为 Cookie > URL 路径 > Accept-Language 请求头 > 英文兜底
+ * @param event Nitro 事件对象
+ * @returns true 表示英文，false 表示中文
+ */
+function detectLanguagePreference(event: any): boolean {
+  const path = event.path
+
+  // 优先级 1：检查 URL 路径中的语言前缀
+  if (path.startsWith('/en/') || path === '/en') {
+    return true
+  }
+  if (path === '/' || path.startsWith('/')) {
+    // 检查是否有明确的中文路径标记
+    if (!path.includes('/en')) {
+      // 优先级 2：检查 locale Cookie
+      const localeCookie = getCookie(event, 'locale')
+      if (localeCookie === 'en') return true
+      if (localeCookie === 'zh-CN') return false
+
+      // 优先级 3：检查 Accept-Language 请求头
+      const acceptLanguage = getHeader(event, 'accept-language') || ''
+      if (acceptLanguage) {
+        // 如果请求头中有 en（任何 en-* 变体）且不包含 zh，倾向英文
+        const hasEnglish = /\ben/i.test(acceptLanguage)
+        const hasChinese = /\bzh/i.test(acceptLanguage)
+        if (hasEnglish && !hasChinese) return true
+        if (hasChinese) return false
+      }
+    }
+  }
+
+  // 优先级 4：英文兜底
+  return true
+}
+
 /** 生成数据库不可用时的维护页（内联样式，不依赖 Nuxt 渲染，保证一定能输出） */
 function renderMaintenance(isEnglish: boolean, isDark: boolean): string {
   const t = isEnglish
@@ -101,7 +137,7 @@ export default defineEventHandler((event) => {
   if (isExcluded(path)) return
   if (isDatabaseReady()) return
 
-  const isEnglish = path === '/en' || path.startsWith('/en/')
+  const isEnglish = detectLanguagePreference(event)
   const isDark = getCookie(event, 'theme') === 'dark'
 
   setResponseStatus(event, 503)
