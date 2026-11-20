@@ -1,0 +1,16 @@
+.git
+node_modules
+.nuxt
+.output
+.nitro
+.data
+dist
+/data/
+/banner.txt
+.env
+.env.*
+.idea
+.claude
+.memsearch
+coverage
+*.log
