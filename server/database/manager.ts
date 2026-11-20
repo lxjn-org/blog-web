@@ -10,13 +10,15 @@
  */
 import { unwatchFile, watchFile } from 'node:fs'
 import type { Kysely } from 'kysely'
+import databaseVersion from '../../database/version.json'
 import { DbUnavailableError } from '../utils/errors'
 import { describeConfig, loadDbConfig } from './config'
 import { checkSchema, createKysely } from './connect'
 import type { Database } from './types'
+import { formatVersion, syncWebVersion } from './version'
 
-/** 用户端代码要求的最低表结构版本；数据库低于此版本时仍尝试运行，但会记录警告 */
-export const REQUIRED_SCHEMA_VERSION = 1
+/** 用户端代码要求的最低数据库版本。 */
+export const REQUIRED_SCHEMA_VERSION = databaseVersion.version
 
 /** 配置文件轮询间隔（毫秒）：用轮询而非 fs.watch，文件不存在、被替换时也能可靠感知 */
 const WATCH_INTERVAL = 2000
@@ -24,6 +26,8 @@ const WATCH_INTERVAL = 2000
 const RELOAD_DELAY = 500
 /** 未就绪时自动重试的最小间隔（毫秒） */
 const RETRY_INTERVAL = 10_000
+/** 连接就绪后定期核对用户端版本。 */
+const VERSION_SYNC_INTERVAL = 60_000
 
 /** 对外暴露的连接状态，便于日志与以后的状态接口使用；不含密码 */
 export interface DbStatus {
@@ -44,6 +48,8 @@ interface ManagerState {
   status: DbStatus
   /** 正在进行的重载，保证同一时间只有一次重载 */
   reloading: Promise<void> | null
+  syncingVersion?: Promise<void>
+  lastVersionSyncAt?: number
   lastAttemptAt: number
   watchedPath: string | null
   reloadTimer: ReturnType<typeof setTimeout> | null
@@ -81,6 +87,36 @@ async function closeQuietly(db: Kysely<Database>) {
   }
 }
 
+/** 尝试登记用户端版本，失败后留给下一轮同步处理。 */
+async function registerWebVersion(db: Kysely<Database>) {
+  try {
+    await syncWebVersion(db)
+  }
+  catch (error) {
+    console.warn('[db] 用户端版本同步失败：', (error as Error).message)
+  }
+}
+
+/** 定期重试未就绪的目标数据库，并核对已连接数据库中的用户端版本。 */
+export async function maintainDatabase() {
+  const s = state()
+  if (s.reloading) return
+  if (!s.db || s.status.error) {
+    await reloadDatabase()
+    return
+  }
+  if (s.syncingVersion || Date.now() - (s.lastVersionSyncAt ?? 0) < VERSION_SYNC_INTERVAL) return
+
+  s.lastVersionSyncAt = Date.now()
+  s.syncingVersion = registerWebVersion(s.db)
+  try {
+    await s.syncingVersion
+  }
+  finally {
+    s.syncingVersion = undefined
+  }
+}
+
 /**
  * 读取最新配置并尝试连接；成功后替换当前连接，失败时保留原连接。
  * 并发调用会合并为同一次重载。
@@ -107,13 +143,16 @@ async function doReload() {
     next = createKysely(config)
     const schemaVersion = await checkSchema(next)
     if (schemaVersion < REQUIRED_SCHEMA_VERSION) {
-      console.warn(`[db] 表结构版本 ${schemaVersion} 低于要求的 ${REQUIRED_SCHEMA_VERSION}，部分功能可能出错，请在管理端升级数据库`)
+      throw new Error(`数据库当前版本 ${formatVersion(schemaVersion)} 低于要求的 ${formatVersion(REQUIRED_SCHEMA_VERSION)}，请通过管理端完成初始化或升级`)
     }
 
+    await registerWebVersion(next)
+    s.lastVersionSyncAt = Date.now()
+    await s.syncingVersion
     const previous = s.db
     s.db = next
     setStatus({ ready: true, target, source, schemaVersion, error: null })
-    console.info(`[db] 已连接 ${target}（表结构版本 ${schemaVersion}）`)
+    console.info(`[db] 已连接 ${target}（表结构版本 ${formatVersion(schemaVersion)}）`)
     if (previous) await closeQuietly(previous)
   }
   catch (error) {
@@ -135,7 +174,7 @@ async function doReload() {
 function humanize(error: unknown, sqliteFile: string | null): string {
   const err = error as NodeJS.ErrnoException & { code?: string }
   if (sqliteFile && (err.code === 'SQLITE_CANTOPEN' || /does not exist/i.test(err.message))) {
-    return `SQLite 数据库文件不存在：${sqliteFile}，请先通过管理端或 npm run db:init 初始化`
+    return `SQLite 数据库文件不存在：${sqliteFile}，请先通过管理端初始化`
   }
   if (err.code === 'ECONNREFUSED') return '数据库拒绝连接，请检查地址、端口和服务是否启动'
   if (err.code === 'ER_ACCESS_DENIED_ERROR') return '数据库用户名或密码错误'
@@ -173,10 +212,13 @@ export function watchDbConfig(configPath: string) {
     // 修改时间和大小都没变，说明只是被访问，不需要重载
     if (curr.mtimeMs === prev.mtimeMs && curr.size === prev.size) return
     if (s.reloadTimer) clearTimeout(s.reloadTimer)
-    s.reloadTimer = setTimeout(() => {
+    // 连接过程中发生的配置变更，在本次连接结束后再处理。
+    s.reloadTimer = setTimeout(async () => {
       s.reloadTimer = null
+      await s.reloading
+      if (s.watchedPath !== configPath) return
       console.info(`[db] 检测到配置文件变化：${configPath}`)
-      void reloadDatabase()
+      await reloadDatabase()
     }, RELOAD_DELAY)
   })
 }
@@ -188,6 +230,8 @@ export async function shutdownDatabase() {
   if (s.reloadTimer) clearTimeout(s.reloadTimer)
   s.watchedPath = null
   s.reloadTimer = null
+  await s.reloading
+  await s.syncingVersion
   if (s.db) {
     const db = s.db
     s.db = null

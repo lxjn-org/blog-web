@@ -4,23 +4,23 @@
 -- 时间均为 UTC，前端展示时按站点时区（setting.basic.timezone）转换
 -- =====================================================================
 
--- 站点设置：value 为 JSON 文本
-INSERT INTO setting (group_key, item_key, value, updated_at) VALUES
-  ('basic',  'siteName',              '"LY 的个人网站"',                              '2026-11-01T00:00:00.000Z'),
-  ('basic',  'slogan',                '"记录开发、工具与折腾的地方"',                  '2026-11-01T00:00:00.000Z'),
-  ('basic',  'domain',                '"example.com"',                               '2026-11-01T00:00:00.000Z'),
-  ('basic',  'timezone',              '"Asia/Shanghai"',                             '2026-11-01T00:00:00.000Z'),
-  ('look',   'background',            '{"mode":"glow","image":null,"overlay":0.7}',  '2026-11-01T00:00:00.000Z'),
-  ('look',   'fullPageScroll',        'true',                                        '2026-11-01T00:00:00.000Z'),
-  ('footer', 'copyright',             '"© 2026 LY"',                                 '2026-11-01T00:00:00.000Z'),
-  ('footer', 'icp',                   '""',                                          '2026-11-01T00:00:00.000Z'),
-  ('footer', 'showAdminEntry',        'false',                                       '2026-11-01T00:00:00.000Z'),
-  ('footer', 'friendLinkApplyEnabled','true',                                        '2026-11-01T00:00:00.000Z'),
-  ('footer', 'friendLinkReviewDays',  '3',                                           '2026-11-01T00:00:00.000Z'),
-  ('login',  'captchaProvider',       '"turnstile"',                                 '2026-11-01T00:00:00.000Z'),
-  ('login',  'captchaSiteKey',        '""',                                          '2026-11-01T00:00:00.000Z'),
-  ('login',  'captchaSecret',         '""',                                          '2026-11-01T00:00:00.000Z'),
-  ('ai',     'chatEnabled',           'false',                                       '2026-11-01T00:00:00.000Z');
+-- 站点设置：0 数字，1 字符串，2 布尔，3 JSON
+INSERT INTO setting (group_key, item_key, type, value, updated_at) VALUES
+  ('basic',  'siteName',              1, 'LY 的个人网站',                              '2026-11-01T00:00:00.000Z'),
+  ('basic',  'slogan',                1, '记录开发、工具与折腾的地方',                  '2026-11-01T00:00:00.000Z'),
+  ('basic',  'domain',                1, 'example.com',                               '2026-11-01T00:00:00.000Z'),
+  ('basic',  'timezone',              1, 'Asia/Shanghai',                             '2026-11-01T00:00:00.000Z'),
+  ('look',   'background',            3, '{"mode":"glow","image":null,"overlay":0.7}',  '2026-11-01T00:00:00.000Z'),
+  ('look',   'fullPageScroll',        2, '1',                                        '2026-11-01T00:00:00.000Z'),
+  ('footer', 'copyright',             1, '© 2026 LY',                                 '2026-11-01T00:00:00.000Z'),
+  ('footer', 'icp',                   1, '',                                          '2026-11-01T00:00:00.000Z'),
+  ('footer', 'showAdminEntry',        2, '1',                                        '2026-11-01T00:00:00.000Z'),
+  ('footer', 'friendLinkApplyEnabled',2, '1',                                        '2026-11-01T00:00:00.000Z'),
+  ('footer', 'friendLinkReviewDays',  0, '3',                                           '2026-11-01T00:00:00.000Z'),
+  ('login',  'captchaProvider',       1, 'turnstile',                                 '2026-11-01T00:00:00.000Z'),
+  ('login',  'captchaSiteKey',        1, '',                                          '2026-11-01T00:00:00.000Z'),
+  ('login',  'captchaSecret',         1, '',                                          '2026-11-01T00:00:00.000Z'),
+  ('ai',     'chatEnabled',           2, '0',                                       '2026-11-01T00:00:00.000Z');
 
 -- 个人资料与联系方式
 INSERT INTO profile (id, name, title, avatar, city, career_start_year, home_intro, about_md, updated_at) VALUES
@@ -134,3 +134,61 @@ INSERT INTO project (id, name, description, cover, icon, category, status, tech_
 INSERT INTO friend_link (id, name, url, avatar, description, status, sort_order, created_at, reviewed_at) VALUES
   (1, 'Vue',  'https://vuejs.org', NULL, '渐进式 JavaScript 框架', 'approved', 1, '2026-11-01T00:00:00.000Z', '2026-11-01T00:00:00.000Z'),
   (2, 'Nuxt', 'https://nuxt.com',  NULL, '基于 Vue 的全栈框架',     'approved', 2, '2026-11-01T00:00:00.000Z', '2026-11-01T00:00:00.000Z');
+
+-- 文章详情样例：包含标题目录、列表和代码块；草稿用于验证公开接口只返回已发布文章
+INSERT INTO post (id, slug, title, summary, content, cover, category_id, status, is_top, read_minutes, views, published_at, created_at, updated_at) VALUES
+  (4, 'sqlite-backup-notes', 'SQLite 本地备份笔记', '记录备份前的检查事项及恢复验证。',
+   '## 备份前检查
+
+- 确认数据库文件所在目录。
+- 为备份选择独立的输出路径。
+
+### 验证恢复结果
+
+```sql
+PRAGMA integrity_check;
+```
+
+在副本上检查完整性，再核对文章和友链记录。',
+   NULL, 2, 'published', 0, 3, 12,
+   '2026-11-03T02:00:00.000Z', '2026-11-03T02:00:00.000Z', '2026-11-04T01:00:00.000Z'),
+  (5, 'private-draft-example', '未发布的样例草稿', '这篇草稿不会出现在公开接口。',
+   '## 写作提纲
+
+补充部署记录和排查过程。',
+   NULL, 3, 'draft', 0, 1, 0,
+   NULL, '2026-11-04T02:00:00.000Z', '2026-11-04T02:00:00.000Z');
+
+INSERT INTO post_tag (post_id, tag_id) VALUES (4, 3), (5, 2);
+
+-- 友链样例：公开列表仅显示已通过记录，待审核和已拒绝记录用于校验状态筛选
+INSERT INTO friend_link (id, name, url, avatar, description, email, backlink_url, status, sort_order, review_note, created_at, reviewed_at) VALUES
+  (3, '开发随记', 'https://notes.example.com', NULL, '记录日常开发中的问题和解决过程。', NULL, NULL,
+   'approved', 3, NULL, '2026-11-02T01:00:00.000Z', '2026-11-02T03:00:00.000Z'),
+  (4, '工具手记', 'https://tools.example.com', NULL, '分享实用的小工具。', 'hello@tools.example.com', 'https://tools.example.com/links',
+   'pending', 0, NULL, '2026-11-03T01:00:00.000Z', NULL),
+  (5, '部署笔记', 'https://deploy.example.com', NULL, '记录自托管服务的配置。', 'hello@deploy.example.com', NULL,
+   'rejected', 0, '暂未找到本站链接', '2026-11-03T02:00:00.000Z', '2026-11-04T02:00:00.000Z');
+
+-- 页足折叠测试：20 条已通过的示例友链，排在常规友链之后
+INSERT INTO friend_link (name, url, status, sort_order, created_at, reviewed_at) VALUES
+  ('GitHub', 'https://github.com/', 'approved', 101, '2026-11-20T00:00:00.000Z', '2026-11-20T00:00:00.000Z'),
+  ('掘金', 'https://juejin.cn/', 'approved', 102, '2026-11-20T00:00:00.000Z', '2026-11-20T00:00:00.000Z'),
+  ('MDN Web Docs', 'https://developer.mozilla.org/zh-CN/', 'approved', 103, '2026-11-20T00:00:00.000Z', '2026-11-20T00:00:00.000Z'),
+  ('阮一峰的网络日志', 'https://www.ruanyifeng.com/blog/', 'approved', 104, '2026-11-20T00:00:00.000Z', '2026-11-20T00:00:00.000Z'),
+  ('npm', 'https://www.npmjs.com/', 'approved', 105, '2026-11-20T00:00:00.000Z', '2026-11-20T00:00:00.000Z'),
+  ('TypeScript 官方手册', 'https://www.typescriptlang.org/docs/', 'approved', 106, '2026-11-20T00:00:00.000Z', '2026-11-20T00:00:00.000Z'),
+  ('Stack Overflow', 'https://stackoverflow.com/', 'approved', 107, '2026-11-20T00:00:00.000Z', '2026-11-20T00:00:00.000Z'),
+  ('开源中国', 'https://www.oschina.net/', 'approved', 108, '2026-11-20T00:00:00.000Z', '2026-11-20T00:00:00.000Z'),
+  ('Node.js', 'https://nodejs.org/zh-cn', 'approved', 109, '2026-11-20T00:00:00.000Z', '2026-11-20T00:00:00.000Z'),
+  ('中国科学技术大学开源软件镜像', 'https://mirrors.ustc.edu.cn/', 'approved', 110, '2026-11-20T00:00:00.000Z', '2026-11-20T00:00:00.000Z'),
+  ('Docker Documentation', 'https://docs.docker.com/', 'approved', 111, '2026-11-20T00:00:00.000Z', '2026-11-20T00:00:00.000Z'),
+  ('Vite', 'https://vite.dev/', 'approved', 112, '2026-11-20T00:00:00.000Z', '2026-11-20T00:00:00.000Z'),
+  ('Rust 程序设计语言中文版', 'https://rustwiki.org/zh-CN/book/', 'approved', 113, '2026-11-20T00:00:00.000Z', '2026-11-20T00:00:00.000Z'),
+  ('Git Documentation', 'https://git-scm.com/doc', 'approved', 114, '2026-11-20T00:00:00.000Z', '2026-11-20T00:00:00.000Z'),
+  ('少数派', 'https://sspai.com/', 'approved', 115, '2026-11-20T00:00:00.000Z', '2026-11-20T00:00:00.000Z'),
+  ('Python 3 中文文档', 'https://docs.python.org/zh-cn/3/', 'approved', 116, '2026-11-20T00:00:00.000Z', '2026-11-20T00:00:00.000Z'),
+  ('PostgreSQL Documentation', 'https://www.postgresql.org/docs/', 'approved', 117, '2026-11-20T00:00:00.000Z', '2026-11-20T00:00:00.000Z'),
+  ('Kubernetes 中文文档', 'https://kubernetes.io/zh-cn/docs/', 'approved', 118, '2026-11-20T00:00:00.000Z', '2026-11-20T00:00:00.000Z'),
+  ('Chrome for Developers', 'https://developer.chrome.com/', 'approved', 119, '2026-11-20T00:00:00.000Z', '2026-11-20T00:00:00.000Z'),
+  ('Cloudflare Developer Docs', 'https://developers.cloudflare.com/', 'approved', 120, '2026-11-20T00:00:00.000Z', '2026-11-20T00:00:00.000Z');

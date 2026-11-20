@@ -1,6 +1,6 @@
 /** 文章、分类、标签的数据访问。用户端只能看到已发布的文章。 */
 import { sql } from 'kysely'
-import type { ExpressionBuilder, SelectQueryBuilder } from 'kysely'
+import type { ExpressionBuilder, NotNull, SelectQueryBuilder } from 'kysely'
 import { getDb } from '../database/manager'
 import type { Database } from '../database/types'
 import { LIKE_ESCAPE, escapeLike } from './shared'
@@ -96,6 +96,7 @@ export function findPublishedPosts(filter: PostFilter, offset: number, limit: nu
     .orderBy('post.id', 'desc')
     .offset(offset)
     .limit(limit)
+    .$narrowType<{ published_at: NotNull }>()
     .execute()
 }
 

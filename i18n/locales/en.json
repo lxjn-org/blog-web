@@ -27,10 +27,15 @@
   "footer": {
     "friends": "Friends",
     "apply": "Apply",
+    "moreFriends": "More...",
+    "collapseFriends": "Less",
+    "applyUnavailable": "Friend link applications are temporarily unavailable.",
+    "admin": "Admin",
     "site": "Site",
     "builtWith": "Built with Nuxt + Naive UI"
   },
   "friendLink": {
+    "captchaFailed": "Verification could not load. Reopen the application form.",
     "title": "Apply for a Friend Link",
     "doneTitle": "Submitted",
     "addUsFirst": "Please add this site first",
@@ -78,6 +83,10 @@
     "searchPlaceholder": "Search by title or tag",
     "top": "Pinned",
     "readMinutes": "{n} min read",
+    "views": "{n} views",
+    "toc": "Contents",
+    "prev": "Previous",
+    "next": "Next",
     "empty": "No posts found",
     "pagination": "Pagination",
     "categories": "Categories",

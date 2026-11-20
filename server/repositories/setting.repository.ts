@@ -1,11 +1,9 @@
 /** 站点设置（setting 表）的数据访问 */
 import { getDb } from '../database/manager'
+import type { Selectable } from 'kysely'
+import type { SettingTable } from '../database/types'
 
-export interface SettingRow {
-  group_key: string
-  item_key: string
-  value: string
-}
+export type SettingRow = Pick<Selectable<SettingTable>, 'group_key' | 'item_key' | 'type' | 'value'>
 
 /**
  * 读取指定分组的全部设置项。
@@ -14,7 +12,7 @@ export interface SettingRow {
 export function findSettingsByGroups(groups: string[]): Promise<SettingRow[]> {
   return getDb()
     .selectFrom('setting')
-    .select(['group_key', 'item_key', 'value'])
+    .select(['group_key', 'item_key', 'type', 'value'])
     .where('group_key', 'in', groups)
     .execute()
 }

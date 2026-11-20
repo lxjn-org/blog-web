@@ -1,31 +1,34 @@
 -- =====================================================================
 -- 个人网站数据库表结构（SQLite 版）
--- 版本：1
+-- 数据库版本：1000001
 -- 说明：字段含义、取值约定见 database/README.md；MySQL 版见 schema.mysql.sql，两者保持一致。
 -- 约定：
 --   1. 时间统一存 UTC 的 ISO 8601 字符串，格式 YYYY-MM-DDTHH:mm:ss.sssZ，由程序写入，不依赖数据库默认值
 --   2. 布尔值存 0 / 1
 --   3. 数组、对象类字段存 JSON 文本
--- 执行方式：sqlite3 data/blog.db < database/schema.sqlite.sql，或 npm run db:init
+-- 执行方式：sqlite3 data/blog.db < database/schema.sqlite.sql
 -- =====================================================================
 
 PRAGMA foreign_keys = ON;
 
 -- ---------------------------------------------------------------------
--- 表结构版本：每次执行升级脚本插入一行，程序据此判断数据库是否需要升级
+-- 模块版本：0 数据库，1 用户端，2 管理端 UI，3 管理端后台
 -- ---------------------------------------------------------------------
-CREATE TABLE schema_version (
-  version     INTEGER PRIMARY KEY,
-  description TEXT    NOT NULL,
-  applied_at  TEXT    NOT NULL
+CREATE TABLE component_version (
+  id              INTEGER PRIMARY KEY,
+  module          INTEGER NOT NULL UNIQUE CHECK (module BETWEEN 0 AND 3),
+  current_version INTEGER NOT NULL DEFAULT 0 CHECK (current_version BETWEEN 0 AND 999999999),
+  latest_version  INTEGER CHECK (latest_version BETWEEN 0 AND 999999999),
+  updated_at      TEXT NOT NULL
 ) STRICT;
 
 -- ---------------------------------------------------------------------
--- 站点设置：按分组存键值，value 为 JSON 文本
+-- 站点设置：value 为文本，type 指定解码方式
 -- ---------------------------------------------------------------------
 CREATE TABLE setting (
   group_key  TEXT NOT NULL,
   item_key   TEXT NOT NULL,
+  type       INTEGER NOT NULL DEFAULT 1 CHECK (type IN (0, 1, 2, 3)),
   value      TEXT NOT NULL,
   updated_at TEXT NOT NULL,
   PRIMARY KEY (group_key, item_key)
@@ -339,7 +342,8 @@ CREATE TABLE backup (
 ) STRICT;
 
 -- ---------------------------------------------------------------------
--- 记录当前版本
+-- 预置模块。数据库版本由管理端在初始化全部成功后登记。
 -- ---------------------------------------------------------------------
-INSERT INTO schema_version (version, description, applied_at)
-VALUES (1, '初始表结构', strftime('%Y-%m-%dT%H:%M:%fZ', 'now'));
+INSERT INTO component_version (module, current_version, updated_at)
+SELECT module, 0, strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+FROM (SELECT 0 AS module UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3);

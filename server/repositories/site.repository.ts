@@ -8,7 +8,7 @@ import { getDb } from '../database/manager'
 export async function getAllSettings() {
   return getDb()
     .selectFrom('setting')
-    .select(['group_key', 'item_key', 'value'])
+    .select(['group_key', 'item_key', 'type', 'value'])
     .orderBy('group_key')
     .orderBy('item_key')
     .execute()
@@ -21,7 +21,7 @@ export async function getAllSettings() {
 export function getSettingsByGroup(groupKey: string) {
   return getDb()
     .selectFrom('setting')
-    .select(['item_key', 'value'])
+    .select(['item_key', 'type', 'value'])
     .where('group_key', '=', groupKey)
     .orderBy('item_key')
     .execute()
@@ -35,7 +35,7 @@ export function getSettingsByGroup(groupKey: string) {
 export function getSetting(groupKey: string, itemKey: string) {
   return getDb()
     .selectFrom('setting')
-    .select(['value'])
+    .select(['type', 'value'])
     .where('group_key', '=', groupKey)
     .where('item_key', '=', itemKey)
     .executeTakeFirst()

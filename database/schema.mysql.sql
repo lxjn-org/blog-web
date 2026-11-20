@@ -1,6 +1,6 @@
 -- =====================================================================
 -- 个人网站数据库表结构（MySQL 8.0.16+ 版）
--- 版本：1
+-- 数据库版本：1000001
 -- 说明：与 schema.sqlite.sql 保持一致，字段含义见 database/README.md。
 -- 约定：
 --   1. 时间统一存 UTC 的 ISO 8601 字符串（VARCHAR(24)），格式 YYYY-MM-DDTHH:mm:ss.sssZ，
@@ -12,15 +12,18 @@
 
 SET NAMES utf8mb4;
 
-CREATE TABLE schema_version (
-  version     INT UNSIGNED NOT NULL PRIMARY KEY,
-  description VARCHAR(200) NOT NULL,
-  applied_at  VARCHAR(24)  NOT NULL
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '表结构版本';
+CREATE TABLE component_version (
+  id              INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  module          TINYINT UNSIGNED NOT NULL UNIQUE CHECK (module BETWEEN 0 AND 3),
+  current_version INT UNSIGNED NOT NULL DEFAULT 0 CHECK (current_version <= 999999999),
+  latest_version  INT UNSIGNED NULL CHECK (latest_version <= 999999999),
+  updated_at      VARCHAR(24) NOT NULL
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '模块版本';
 
 CREATE TABLE setting (
   group_key  VARCHAR(32) NOT NULL,
   item_key   VARCHAR(64) NOT NULL,
+  type       TINYINT UNSIGNED NOT NULL DEFAULT 1 CHECK (type IN (0, 1, 2, 3)),
   value      TEXT        NOT NULL,
   updated_at VARCHAR(24) NOT NULL,
   PRIMARY KEY (group_key, item_key)
@@ -320,5 +323,7 @@ CREATE TABLE backup (
   created_at VARCHAR(24)  NOT NULL
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '数据库备份记录';
 
-INSERT INTO schema_version (version, description, applied_at)
-VALUES (1, '初始表结构', CONCAT(LEFT(DATE_FORMAT(UTC_TIMESTAMP(3), '%Y-%m-%dT%H:%i:%s.%f'), 23), 'Z'));
+-- 数据库版本由管理端在初始化全部成功后登记。
+INSERT INTO component_version (module, current_version, updated_at)
+SELECT module, 0, CONCAT(LEFT(DATE_FORMAT(UTC_TIMESTAMP(3), '%Y-%m-%dT%H:%i:%s.%f'), 23), 'Z')
+FROM (SELECT 0 AS module UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3) AS modules;

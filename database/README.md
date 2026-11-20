@@ -7,6 +7,7 @@
 | `schema.sqlite.sql` | SQLite 建表脚本（默认数据库） |
 | `schema.mysql.sql` | MySQL 8.0.16+ 建表脚本，与 SQLite 版字段一一对应 |
 | `seed.sql` | 样例数据，两种数据库通用，仅用于开发和首次体验 |
+| `version.json` | 当前建表脚本对应的目标数据库版本 |
 
 > 表结构的初始化与升级最终由管理端负责，用户端只读写数据、不建表。管理端项目建好后，这几个文件迁移过去维护。
 
@@ -29,7 +30,7 @@
 
 | 表 | 说明 | 用户端 | 管理端 |
 | --- | --- | --- | --- |
-| [schema_version](#schema_version) | 表结构版本 | 读 | 读写 |
+| [component_version](#component_version) | 模块的当前版本与最新版本 | 读数据库版本，写用户端版本 | 读写 |
 | [setting](#setting) | 站点设置（键值） | 读 | 读写 |
 | [profile](#profile) | 个人资料（单行） | 读 | 读写 |
 | [contact](#contact) | 联系方式 | 读 | 读写 |
@@ -68,25 +69,30 @@ storage_repo 1 ── n file
 
 ## 系统
 
-### schema_version
+### component_version
 
-表结构版本。每执行一次升级脚本插入一行；程序取最大 `version` 判断数据库是否需要升级。当前版本：**1**。
+每个模块一行。版本号由大版本、发版号和小修改号组成，每段最多三位。计算方式为 `大版本 × 1000000 + 发版号 × 1000 + 小修改号`，例如 `v1.0.1` 存为 `1000001`。同批发布的模块通常共享大版本和发版号。
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| version | 整数 | 是 | 主键，版本号，从 1 递增 |
-| description | 文本 | 是 | 本次变更说明 |
-| applied_at | 时间 | 是 | 执行时间 |
+| id | 整数 | 是 | 自增主键 |
+| module | 整数 | 是 | 唯一。0 数据库、1 用户端、2 管理端 UI、3 管理端后台 |
+| current_version | 整数 | 是 | 实际生效的版本，范围 0–999999999，初始为 0 |
+| latest_version | 整数 | 否 | 发布渠道提供的最新版本，范围 0–999999999，初始为 NULL |
+| updated_at | 时间 | 是 | 任一版本值实际变化的时间 |
+
+管理端在数据库初始化或升级成功后更新模块 0，并读取部署的管理端 UI 和后台版本文件登记模块 2、3。用户端在数据库就绪后，从 `server/assets/version.json` 登记模块 1，启动和切库时立即检查，此后每分钟核对。最新版本由后续发布检查更新。版本记录表留待管理端开发时定义，旧数据库的 `schema_version` 仅保留为历史迁移记录。
 
 ### setting
 
-站点设置，按分组存键值。`value` 是 JSON 文本，字符串要带引号（`"LY"`），数字和布尔不带（`3`、`true`）。用户端读不到某项时使用程序内置的默认值。
+站点设置按分组存键值。`type` 指定 `value` 的编码，用户端读不到某项或格式无效时使用程序内置的默认值。
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
 | group_key | 文本 | 是 | 分组，与管理端设置页一致：`basic` / `look` / `footer` / `login` / `api` / `ai` |
 | item_key | 文本 | 是 | 配置项，小驼峰 |
-| value | JSON 文本 | 是 | 配置值 |
+| type | 整数 | 是 | `0` 数字、`1` 字符串、`2` 布尔、`3` JSON，默认为 `1` |
+| value | 文本 | 是 | 数字存 `3`，字符串原样存 `LY`，布尔存 `1` 或 `0`，JSON 存合法 JSON 文本 |
 | updated_at | 时间 | 是 | 最后修改时间 |
 
 主键 `(group_key, item_key)`。已用到的配置项：
@@ -106,7 +112,7 @@ storage_repo 1 ── n file
 | footer | friendLinkReviewDays | number | `3` | 审核天数提示 | `friendLinkApply.reviewDays` |
 | login | captchaProvider | string | `"turnstile"` | 人机验证服务商：turnstile / geetest / tencent | `captcha.provider` |
 | login | captchaSiteKey | string | `""` | 人机验证公开 key | `captcha.siteKey` |
-| login | captchaSecret | string | `""` | 人机验证服务端密钥，**加密保存，不对外返回** | — |
+| login | captchaSecret | string | `""` | 管理端预留的加密配置。当前用户端从环境变量 `NUXT_TURNSTILE_SECRET` 读取密钥 | — |
 | ai | chatEnabled | boolean | `false` | 访客 AI 问答开关（二期） | `chatEnabled` |
 
 ### visit_log
@@ -502,16 +508,18 @@ AI 服务商配置。
 | 配置文件格式错误、字段不完整 | 记录警告，使用 SQLite `data/blog.db` |
 | 配置正确但连接失败 | 记录错误，接口返回 50000，服务不退出；已有连接时继续使用旧连接 |
 | SQLite 数据库文件不存在 | 不自动创建空库，接口返回 50000，提示先初始化 |
+| 模块版本表缺失或数据库版本不足 | 显示维护页并定期重试，等待管理端完成初始化或升级 |
 | 配置文件被修改 | 自动用新配置重新连接，成功后切换，失败则保留原连接 |
 
 相对路径都以项目运行目录（启动服务时所在目录）为基准。`data/` 目录含数据库和密码，不提交到仓库。
 
 ## 初始化与升级
 
-本地开发初始化 SQLite（建表并导入样例数据）：
+本地开发可手动初始化 SQLite，样例数据按需导入。正式环境由管理端完成初始化及版本登记。
 
 ```bash
-npm run db:init
+sqlite3 data/blog.db < database/schema.sqlite.sql
+sqlite3 data/blog.db < database/seed.sql
 ```
 
 MySQL 手动初始化：
@@ -521,9 +529,14 @@ mysql -u root -p blog < database/schema.mysql.sql
 mysql -u root -p blog < database/seed.sql
 ```
 
-以后修改表结构时：
+初始化 SQL 完成后四个模块的当前版本仍为 `0`。手动初始化时，确认建库已成功，再按 `database/version.json` 登记模块 0。当前建表脚本对应 `1000001`。将下列时间占位值换成实际 UTC 时间。
 
-1. 在本文档中更新字段说明；
-2. 同步修改 `schema.sqlite.sql` 与 `schema.mysql.sql`（供全新安装使用）；
-3. 新增升级脚本（如 `migrations/0002-xxx.sqlite.sql` 和 `.mysql.sql`），末尾插入新的 `schema_version` 行；
-4. 用户端代码中的 `REQUIRED_SCHEMA_VERSION` 改为新版本号。
+```sql
+UPDATE component_version
+SET current_version = 1000001, updated_at = '<实际 UTC ISO 时间>'
+WHERE module = 0 AND current_version = 0;
+```
+
+旧库升级时，旧版 `schema_version` 为 1 的库先执行对应数据库的 `0002-setting-type` 脚本。已达到旧版 2 的库直接执行对应的 `1000001-component-version` 脚本。该脚本建立模块版本表并登记数据库版本 `1000001`，保留旧迁移历史与业务数据。MySQL 的 DDL 会隐式提交，升级前应备份。
+
+以后修改表结构时，同步更新本文档、两份建表脚本和 `database/version.json`，并提供对应目标版本的升级 SQL。管理端应在初始化、切换数据库和升级时检查迁移结果，成功后才登记数据库当前版本。

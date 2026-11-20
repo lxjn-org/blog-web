@@ -8,12 +8,18 @@ export default defineNuxtConfig({
 
   modules: ['@nuxtjs/i18n', '@pinia/nuxt'],
 
-  // 服务端私密配置，对应环境变量 NUXT_DB_CONFIG_PATH / NUXT_IP_HASH_SALT
+  // 服务端运行配置，可由对应的 NUXT_ 环境变量覆盖
   runtimeConfig: {
     // 数据库配置文件路径，默认 data/data.config
     dbConfigPath: '',
+    // 自定义启动横幅路径，留空时读取运行目录下的 banner.txt
+    bannerPath: '',
     // 友链申请限流的 IP 哈希盐，建议部署时用环境变量覆盖
     ipHashSalt: '',
+    // 仅当可信反向代理覆盖转发地址时开启
+    trustProxy: false,
+    // Turnstile 服务端密钥
+    turnstileSecret: '',
   },
 
   // 生产构建时转译 Naive UI，保证服务端渲染使用同一份 css-render 实例

@@ -10,16 +10,20 @@ import type { Generated } from 'kysely'
 /** 0 / 1 表示的布尔值 */
 export type Bool = 0 | 1
 
-export interface SchemaVersionTable {
-  version: number
-  description: string
-  applied_at: string
+export interface ComponentVersionTable {
+  id: Generated<number>
+  module: 0 | 1 | 2 | 3
+  current_version: Generated<number>
+  latest_version: number | null
+  updated_at: string
 }
 
 export interface SettingTable {
   group_key: string
   item_key: string
-  /** JSON 文本 */
+  /** 0 数字、1 字符串、2 布尔、3 JSON */
+  type: Generated<0 | 1 | 2 | 3>
+  /** 按 type 编码的文本，布尔值存 0 或 1 */
   value: string
   updated_at: string
 }
@@ -180,7 +184,7 @@ export interface VisitLogTable {
  * 避免误用；管理端项目自行声明完整类型。
  */
 export interface Database {
-  schema_version: SchemaVersionTable
+  component_version: ComponentVersionTable
   setting: SettingTable
   profile: ProfileTable
   contact: ContactTable

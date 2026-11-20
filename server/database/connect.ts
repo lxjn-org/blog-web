@@ -46,21 +46,22 @@ export function createKysely(config: DbConfig): Kysely<Database> {
 /**
  * 连接数据库并读取表结构版本，用于判断连接是否可用、数据库是否已初始化。
  * @returns 当前表结构版本号
- * @throws 连接失败，或缺少 schema_version 表（未初始化）时抛出带中文说明的错误
+ * @throws 数据库连接失败或尚未初始化模块版本表时抛出错误
  */
 export async function checkSchema(db: Kysely<Database>): Promise<number> {
   try {
     const row = await db
-      .selectFrom('schema_version')
-      .select(eb => eb.fn.max('version').as('version'))
+      .selectFrom('component_version')
+      .select('current_version')
+      .where('module', '=', 0)
       .executeTakeFirst()
-    return Number(row?.version ?? 0)
+    return row?.current_version ?? 0
   }
   catch (error) {
     const message = (error as Error).message
     // SQLite 与 MySQL 的“表不存在”报错文案不同，统一识别为未初始化
     if (/no such table|doesn't exist/i.test(message)) {
-      throw new Error('数据库尚未初始化（缺少 schema_version 表），请先通过管理端或 npm run db:init 初始化')
+      throw new Error('数据库缺少模块版本表，请通过管理端初始化或升级')
     }
     throw error
   }

@@ -27,10 +27,15 @@
   "footer": {
     "friends": "友情链接",
     "apply": "申请友链",
+    "moreFriends": "更多...",
+    "collapseFriends": "收起",
+    "applyUnavailable": "暂时无法提交友链申请，请稍后再试",
+    "admin": "管理后台",
     "site": "站点",
     "builtWith": "基于 Nuxt + Naive UI 构建"
   },
   "friendLink": {
+    "captchaFailed": "人机验证加载失败，请重新打开申请窗口",
     "title": "申请友链",
     "doneTitle": "提交成功",
     "addUsFirst": "请先添加本站",
@@ -78,6 +83,10 @@
     "searchPlaceholder": "搜索文章标题或标签",
     "top": "置顶",
     "readMinutes": "约 {n} 分钟阅读",
+    "views": "{n} 次阅读",
+    "toc": "文章目录",
+    "prev": "上一篇",
+    "next": "下一篇",
     "empty": "没有找到相关文章",
     "pagination": "分页",
     "categories": "分类",

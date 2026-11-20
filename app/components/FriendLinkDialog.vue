@@ -13,6 +13,13 @@ const formRef = ref<FormInst | null>(null)
 const step = ref<'form' | 'done'>('form')
 const submitting = ref(false)
 const confirmed = ref(false)
+const captchaToken = ref('')
+const captchaAttempt = ref(0)
+
+/** 提示验证组件加载失败。 */
+function reportCaptchaError() {
+  message.error(t('friendLink.captchaFailed'))
+}
 
 /** 生成空白表单 */
 function emptyForm() {
@@ -63,15 +70,19 @@ async function submit() {
     return
   }
 
+  if (submitting.value || !captchaToken.value) return
   submitting.value = true
-  // TODO: 接入人机验证 SDK（服务商与 siteKey 见 /api/site 的 captcha），这里先用占位票据
-  const body: FriendLinkApply = { ...form.value, captchaToken: 'mock-token' }
-  const res = await apiRequest<null>('/api/friend-links/apply', { method: 'POST', body })
+  const body: FriendLinkApply = { ...form.value, captchaToken: captchaToken.value }
+  const res = await apiRequest<{ id: number, status: 'pending' } | null>('/api/friend-links/apply', { method: 'POST', body })
     .catch(() => ({ code: 50000, message: t('friendLink.failed'), data: null }))
   submitting.value = false
+  captchaToken.value = ''
 
   if (res.code === 0) step.value = 'done'
-  else message.error(res.message)
+  else {
+    captchaAttempt.value++
+    message.error(res.message)
+  }
 }
 
 /** 关闭弹窗；关闭动画结束后重置表单 */
@@ -84,6 +95,7 @@ function reset() {
   step.value = 'form'
   form.value = emptyForm()
   confirmed.value = false
+  captchaToken.value = ''
 }
 </script>
 
@@ -139,6 +151,7 @@ function reset() {
       </n-form>
 
       <n-checkbox v-model:checked="confirmed">{{ t('friendLink.confirm') }}</n-checkbox>
+      <TurnstileWidget v-if="show && site?.captcha.siteKey" :key="captchaAttempt" v-model="captchaToken" :site-key="site.captcha.siteKey" @failed="reportCaptchaError" />
       <p class="fl-note">{{ t('friendLink.note', { days: site?.friendLinkApply.reviewDays ?? 3 }) }}</p>
     </template>
 
@@ -152,7 +165,7 @@ function reset() {
       <div class="fl-actions" :class="{ 'is-center': step === 'done' }">
         <template v-if="step === 'form'">
           <n-button @click="close">{{ t('common.cancel') }}</n-button>
-          <n-button type="primary" :loading="submitting" @click="submit">{{ t('friendLink.submit') }}</n-button>
+          <n-button type="primary" :loading="submitting" :disabled="!captchaToken" @click="submit">{{ t('friendLink.submit') }}</n-button>
         </template>
         <n-button v-else type="primary" @click="close">{{ t('common.gotIt') }}</n-button>
       </div>

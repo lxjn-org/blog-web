@@ -6,7 +6,7 @@ export const site: SiteConfig = {
   background: { mode: 'glow', image: null, overlay: 0.7 },
   fullPageScroll: true,
   footer: { copyright: '© 2026 LY', icp: '', showAdminEntry: false },
-  friendLinkApply: { enabled: true, reviewDays: 3 },
+  friendLinkApply: { enabled: true, ready: false, reviewDays: 3 },
   captcha: { provider: 'turnstile', siteKey: '' },
   chatEnabled: false,
 }

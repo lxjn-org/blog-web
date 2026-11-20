@@ -27,7 +27,7 @@ export interface SiteConfig {
   background: { mode: BackgroundMode; image: string | null; overlay: number }
   fullPageScroll: boolean
   footer: { copyright: string; icp: string; showAdminEntry: boolean }
-  friendLinkApply: { enabled: boolean; reviewDays: number }
+  friendLinkApply: { enabled: boolean; ready: boolean; reviewDays: number }
   captcha: { provider: 'turnstile' | 'geetest' | 'tencent'; siteKey: string }
   chatEnabled: boolean
 }

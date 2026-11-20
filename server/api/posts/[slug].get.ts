@@ -1,17 +1,33 @@
-import { posts } from '../../mock/posts'
+import { findAdjacentPost, findPublishedPostBySlug, findTagsByPostIds, incrementPostViews } from '../../repositories/post.repository'
 
-/** GET /api/posts/:slug：返回文章详情与上下篇，slug 不存在时返回 40400 */
-export default defineEventHandler((event) => {
-  const slug = getRouterParam(event, 'slug')
-  const post = posts.find(item => item.slug === slug)
-  if (!post) return fail(event, ErrorCode.NOT_FOUND, '文章不存在')
+/** 读取已发布文章的详情、标签和上下篇，并记录一次阅读。 */
+export default defineEventHandler(async (event) => {
+  const slug = getRouterParam(event, 'slug', { decode: true })
+  const post = slug ? await findPublishedPostBySlug(slug) : undefined
+  if (!post?.published_at) return fail(event, ErrorCode.NOT_FOUND, '文章不存在')
 
-  // 按发布时间正序排列，prev 是更早的一篇，next 是更晚的一篇
-  const timeline = [...posts].sort((a, b) => a.publishedAt.localeCompare(b.publishedAt))
-  const index = timeline.findIndex(item => item.slug === slug)
-  const brief = (item?: typeof post) => (item ? { slug: item.slug, title: item.title } : null)
+  const [tags, prev, next] = await Promise.all([
+    findTagsByPostIds([post.id]),
+    findAdjacentPost('prev', post.published_at, post.id),
+    findAdjacentPost('next', post.published_at, post.id),
+  ])
+  await incrementPostViews(post.id)
 
-  const { isTop: _isTop, ...rest } = post
-  const detail: PostDetail = { ...rest, prev: brief(timeline[index - 1]), next: brief(timeline[index + 1]) }
-  return ok(detail)
+  return ok<PostDetail>({
+    id: post.id,
+    slug: post.slug,
+    title: post.title,
+    summary: post.summary,
+    content: post.content,
+    cover: post.cover,
+    category: { name: post.category_name, slug: post.category_slug },
+    // 保留标签的公开字段。
+    tags: tags.map(({ name, slug }) => ({ name, slug })),
+    readMinutes: post.read_minutes,
+    views: post.views + 1,
+    publishedAt: post.published_at,
+    updatedAt: post.updated_at,
+    prev: prev ?? null,
+    next: next ?? null,
+  })
 })
