@@ -70,7 +70,9 @@ web_modules/
 
 # dotenv environment variables file
 .env
-.env.test
+.env.*
+!.env.example
+!.env.*.example
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
@@ -122,9 +124,14 @@ dist
 
 # 数据库文件（本地 SQLite，不提交仓库）
 data/
+/banner.txt
 
 # IDE
 .idea
 
 # Claude Code 本地配置
 .claude/
+
+# 系统生成文件
+.DS_Store
+Thumbs.db
